@@ -451,6 +451,19 @@ export const InvoiceGenerator: React.FC = () => {
                 <div className="inv-badge-title">TAX INVOICE</div>
                 <div className="inv-meta-num">#{invoiceNumber}</div>
                 <div className="inv-meta-row"><span>Date:</span> <strong>{invoiceDate}</strong></div>
+                <div className="inv-meta-row">
+                  <span>Status:</span>{' '}
+                  <strong style={{
+                    display: 'inline-block',
+                    padding: '1px 6px',
+                    borderRadius: '4px',
+                    fontSize: '0.72rem',
+                    backgroundColor: paymentStatus === 'PAID' ? '#dcfce7' : paymentStatus === 'PARTIAL' ? '#fef3c7' : '#fee2e2',
+                    color: paymentStatus === 'PAID' ? '#15803d' : paymentStatus === 'PARTIAL' ? '#b45309' : '#b91c1c'
+                  }}>
+                    {paymentStatus}
+                  </strong>
+                </div>
               </div>
             </div>
 
