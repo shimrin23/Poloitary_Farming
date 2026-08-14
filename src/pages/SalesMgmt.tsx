@@ -1169,7 +1169,7 @@ export const SalesMgmt: React.FC = () => {
           <div className="printable-invoice-container print-invoice">
             <div className="invoice-header-branding">
               <div>
-                <h2>AKSHA FARM</h2>
+                <h2>Aksha Poultry Farms & Traders</h2>
                 <p className="inv-subtitle">Premium Poultry Farm Management</p>
                 <p className="inv-address">423/1, Kekunagolla, Kekunagolla</p>
                 <p className="inv-address">📞 +94768470361</p>
@@ -1505,7 +1505,7 @@ export const SalesMgmt: React.FC = () => {
           <div className="printable-invoice-container print-invoice">
             <div className="invoice-header-branding">
               <div>
-                <h2>AKSHA FARM</h2>
+                <h2>Aksha Poultry Farms & Traders</h2>
                 <p className="inv-subtitle">Customer Account & Ledger Invoice Statement</p>
                 <p className="inv-address">423/1, Kekunagolla, Kekunagolla | 📞 +94768470361</p>
               </div>
