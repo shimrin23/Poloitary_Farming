@@ -69,14 +69,25 @@ export const SalesMgmt: React.FC = () => {
     }
   };
 
-  // Admin Verification for Mark Paid & Payment Updates
+  // Admin Verification for Mark Paid, Payment Updates & Editing Sales
   const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [adminAuthError, setAdminAuthError] = useState('');
-  const [pendingPaidSaleId, setPendingPaidSaleId] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<
+    | { type: 'togglePaid'; saleId: string }
+    | { type: 'editSale'; sale: Sale }
+    | null
+  >(null);
 
   const handleInitiateTogglePaid = (saleId: string) => {
-    setPendingPaidSaleId(saleId);
+    setPendingAction({ type: 'togglePaid', saleId });
+    setAdminPasswordInput('');
+    setAdminAuthError('');
+    setIsAdminAuthModalOpen(true);
+  };
+
+  const handleInitiateEditSale = (sale: Sale) => {
+    setPendingAction({ type: 'editSale', sale });
     setAdminPasswordInput('');
     setAdminAuthError('');
     setIsAdminAuthModalOpen(true);
@@ -84,7 +95,7 @@ export const SalesMgmt: React.FC = () => {
 
   const handleVerifyAdminAndExecute = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!pendingPaidSaleId) return;
+    if (!pendingAction) return;
 
     const adminUser = usersList.find(u => u.role === 'Admin');
     const isPasswordCorrect = adminUser ? adminUser.password === adminPasswordInput : (adminPasswordInput === 'admin' || adminPasswordInput === '2001-02-23');
@@ -95,14 +106,18 @@ export const SalesMgmt: React.FC = () => {
     }
 
     try {
-      await togglePaid(pendingPaidSaleId);
+      if (pendingAction.type === 'togglePaid') {
+        await togglePaid(pendingAction.saleId);
+      } else if (pendingAction.type === 'editSale') {
+        handleOpenEditSale(pendingAction.sale);
+      }
       setIsAdminAuthModalOpen(false);
-      setPendingPaidSaleId(null);
+      setPendingAction(null);
       setAdminPasswordInput('');
       setAdminAuthError('');
     } catch (err) {
-      console.error('Mark paid failed:', err);
-      setAdminAuthError('❌ Failed to update payment status. Please try again.');
+      console.error('Admin action failed:', err);
+      setAdminAuthError('❌ Failed to execute action. Please try again.');
     }
   };
 
@@ -883,7 +898,7 @@ export const SalesMgmt: React.FC = () => {
                                 <button
                                   type="button"
                                   className="btn btn-secondary btn-xs-custom"
-                                  onClick={() => handleOpenEditSale(s)}
+                                  onClick={() => handleInitiateEditSale(s)}
                                 >
                                   ✏️ Edit
                                 </button>
@@ -1603,12 +1618,12 @@ export const SalesMgmt: React.FC = () => {
         )}
       </Modal>
 
-      {/* ── Admin Password Approval Modal for Mark Paid ── */}
+      {/* ── Admin Password Approval Modal for Sales Transactions (Edit / Mark Paid) ── */}
       <Modal
         isOpen={isAdminAuthModalOpen}
         onClose={() => {
           setIsAdminAuthModalOpen(false);
-          setPendingPaidSaleId(null);
+          setPendingAction(null);
           setAdminPasswordInput('');
           setAdminAuthError('');
         }}
@@ -1620,7 +1635,7 @@ export const SalesMgmt: React.FC = () => {
               type="button"
               onClick={() => {
                 setIsAdminAuthModalOpen(false);
-                setPendingPaidSaleId(null);
+                setPendingAction(null);
                 setAdminPasswordInput('');
                 setAdminAuthError('');
               }}
@@ -1628,7 +1643,7 @@ export const SalesMgmt: React.FC = () => {
               Cancel
             </button>
             <button className="btn btn-success" type="button" onClick={handleVerifyAdminAndExecute}>
-              🔑 Verify & Update Payment
+              {pendingAction?.type === 'editSale' ? '🔑 Verify & Open Editor' : '🔑 Verify & Update Payment'}
             </button>
           </div>
         }
@@ -1639,7 +1654,9 @@ export const SalesMgmt: React.FC = () => {
               🔒 Admin Password Required
             </p>
             <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              Marking an invoice as paid or updating payment status requires administrator verification.
+              {pendingAction?.type === 'editSale'
+                ? 'Modifying or editing a recorded sales invoice requires administrator verification.'
+                : 'Marking an invoice as paid or updating payment status requires administrator verification.'}
             </p>
           </div>
 
