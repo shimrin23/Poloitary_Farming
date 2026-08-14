@@ -15,7 +15,7 @@ interface AdditionalChargeItem {
   type: 'add' | 'deduct';
 }
 
-const FARM_NAME = 'Aksha Poultry Farms & Traders';
+const FARM_NAME = 'Aksha Poultry Farms';
 const FARM_ADDRESS = '423/1, Kekunagolla, Kekunagolla';
 const FARM_PHONE = '+94768470361';
 
