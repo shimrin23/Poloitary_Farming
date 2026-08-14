@@ -196,38 +196,46 @@ export const EmployeeMgmt: React.FC = () => {
 
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
             {/* Status Filter Tabs */}
-            <div className="filter-tabs" style={{ display: 'flex', gap: '0.35rem', background: 'rgba(255,255,255,0.04)', padding: '0.2rem', borderRadius: 'var(--radius-sm)' }}>
+            <div className="sub-queue-tabs">
               <button
                 type="button"
-                className={`tab-btn ${submissionTab === 'pending' ? 'active' : ''}`}
+                className={`queue-tab-btn ${submissionTab === 'pending' ? 'active tab-pending' : ''}`}
                 onClick={() => setSubmissionTab('pending')}
-                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
               >
-                ⏳ Pending ({pendingSubmissions.filter(s => s.status === 'Pending').length})
+                <span>⏳ Pending</span>
+                <span className="count-pill amber">
+                  {pendingSubmissions.filter(s => s.status === 'Pending').length}
+                </span>
               </button>
               <button
                 type="button"
-                className={`tab-btn ${submissionTab === 'approved' ? 'active' : ''}`}
+                className={`queue-tab-btn ${submissionTab === 'approved' ? 'active tab-approved' : ''}`}
                 onClick={() => setSubmissionTab('approved')}
-                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
               >
-                ✅ Approved ({pendingSubmissions.filter(s => s.status === 'Approved').length})
+                <span>✅ Approved</span>
+                <span className="count-pill emerald">
+                  {pendingSubmissions.filter(s => s.status === 'Approved').length}
+                </span>
               </button>
               <button
                 type="button"
-                className={`tab-btn ${submissionTab === 'rejected' ? 'active' : ''}`}
+                className={`queue-tab-btn ${submissionTab === 'rejected' ? 'active tab-rejected' : ''}`}
                 onClick={() => setSubmissionTab('rejected')}
-                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
               >
-                ❌ Rejected ({pendingSubmissions.filter(s => s.status === 'Rejected').length})
+                <span>❌ Rejected</span>
+                <span className="count-pill rose">
+                  {pendingSubmissions.filter(s => s.status === 'Rejected').length}
+                </span>
               </button>
               <button
                 type="button"
-                className={`tab-btn ${submissionTab === 'all' ? 'active' : ''}`}
+                className={`queue-tab-btn ${submissionTab === 'all' ? 'active tab-all' : ''}`}
                 onClick={() => setSubmissionTab('all')}
-                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
               >
-                All ({pendingSubmissions.length})
+                <span>All Logs</span>
+                <span className="count-pill neutral">
+                  {pendingSubmissions.length}
+                </span>
               </button>
             </div>
 
@@ -895,6 +903,101 @@ export const EmployeeMgmt: React.FC = () => {
         .btn-action:disabled {
           opacity: 0.4;
           cursor: not-allowed;
+        }
+
+        .sub-queue-tabs {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(15, 23, 42, 0.65);
+          padding: 4px;
+          border-radius: var(--radius-md);
+          border: 1px solid var(--border-color);
+          backdrop-filter: blur(8px);
+        }
+
+        .queue-tab-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: transparent;
+          border: 1px solid transparent;
+          color: var(--text-secondary);
+          padding: 0.35rem 0.75rem;
+          border-radius: var(--radius-sm);
+          font-family: var(--font-family);
+          font-size: 0.82rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all var(--transition-fast);
+          white-space: nowrap;
+        }
+
+        .queue-tab-btn:hover {
+          color: var(--text-primary);
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        .queue-tab-btn.active {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text-primary);
+          border-color: rgba(255, 255, 255, 0.15);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        .queue-tab-btn.active.tab-pending {
+          background: rgba(245, 158, 11, 0.15);
+          border-color: rgba(245, 158, 11, 0.35);
+          color: #fbbf24;
+        }
+
+        .queue-tab-btn.active.tab-approved {
+          background: rgba(16, 185, 129, 0.15);
+          border-color: rgba(16, 185, 129, 0.35);
+          color: #34d399;
+        }
+
+        .queue-tab-btn.active.tab-rejected {
+          background: rgba(244, 63, 94, 0.15);
+          border-color: rgba(244, 63, 94, 0.35);
+          color: #fb7185;
+        }
+
+        .count-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 19px;
+          height: 19px;
+          padding: 0 5px;
+          border-radius: 999px;
+          font-size: 0.7rem;
+          font-weight: 700;
+          line-height: 1;
+        }
+
+        .count-pill.amber {
+          background: rgba(245, 158, 11, 0.25);
+          color: #f59e0b;
+          border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .count-pill.emerald {
+          background: rgba(16, 185, 129, 0.25);
+          color: #10b981;
+          border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .count-pill.rose {
+          background: rgba(244, 63, 94, 0.25);
+          color: #f43f5e;
+          border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .count-pill.neutral {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text-secondary);
+          border: 1px solid rgba(255, 255, 255, 0.12);
         }
       `}</style>
     </div>
