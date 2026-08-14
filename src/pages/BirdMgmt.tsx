@@ -411,22 +411,24 @@ export const BirdMgmt: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           {isAdmin && (
-            <button
-              className="btn btn-secondary"
-              onClick={() => handleInitiateSell()}
-            >
-              🐔 Sell Bird Batch
-            </button>
+            <>
+              <button
+                className="btn btn-secondary"
+                onClick={() => handleInitiateSell()}
+              >
+                🐔 Sell Bird Batch
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setNewType(filter === 'Layer' ? 'Layer' : 'Broiler');
+                  setIsAddModalOpen(true);
+                }}
+              >
+                ➕ Add Bird Batch
+              </button>
+            </>
           )}
-          <button
-            className="btn btn-primary"
-            onClick={() => {
-              setNewType(filter === 'Layer' ? 'Layer' : 'Broiler');
-              setIsAddModalOpen(true);
-            }}
-          >
-            ➕ Add Bird Batch
-          </button>
         </div>
       </div>
 

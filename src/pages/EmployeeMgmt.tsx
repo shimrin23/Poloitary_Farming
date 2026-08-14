@@ -257,11 +257,7 @@ export const EmployeeMgmt: React.FC = () => {
               <option value="Mortality">💀 Mortality Logs</option>
               <option value="FeedConsumption">🌾 Feed Consumption</option>
               <option value="FeedConsumptionUpdate">🌾 Feed Consumption Edits</option>
-              <option value="FeedPurchase">🛒 Feed Purchases</option>
-              <option value="VaccineSchedule">💉 Vaccine Events</option>
               <option value="VaccineStatusUpdate">💉 Vaccine Status Updates</option>
-              <option value="MedicalRecord">🩺 Medical Records</option>
-              <option value="BirdBatch">🐥 Bird Batches</option>
             </select>
           </div>
         </div>

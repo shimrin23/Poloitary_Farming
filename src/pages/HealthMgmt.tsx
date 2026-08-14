@@ -288,12 +288,12 @@ export const HealthMgmt: React.FC = () => {
           </button>
         </div>
         <div className="action-buttons-group">
-          {subTab === 'vaccines' && (
+          {isAdmin && subTab === 'vaccines' && (
             <button className="btn btn-primary" onClick={() => setIsVaccineModalOpen(true)}>
               📅 Schedule Vaccine
             </button>
           )}
-          {subTab === 'medical' && (
+          {isAdmin && subTab === 'medical' && (
             <button className="btn btn-primary" onClick={() => setIsMedicalModalOpen(true)}>
               🩺 Add Medical Record
             </button>
