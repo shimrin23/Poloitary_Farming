@@ -12,7 +12,7 @@ export const Login: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('Admin');
+  const [role] = useState<UserRole>('Employee');
   
   // Security Question fields for Signup & Reset
   const [securityQuestion, setSecurityQuestion] = useState('What is the name of your farm?');
@@ -289,26 +289,7 @@ export const Login: React.FC = () => {
 
         {mode === 'signup' && (
           <form onSubmit={handleSignupSubmit} className="login-form">
-            <h3 className="form-section-title">Create Account</h3>
-
-            <div className="role-selector">
-              <button
-                type="button"
-                className={`role-btn ${role === 'Admin' ? 'active admin' : ''}`}
-                onClick={() => setRole('Admin')}
-                disabled={isLoading}
-              >
-                👑 Register Admin
-              </button>
-              <button
-                type="button"
-                className={`role-btn ${role === 'Employee' ? 'active employee' : ''}`}
-                onClick={() => setRole('Employee')}
-                disabled={isLoading}
-              >
-                🧑‍🌾 Register Employee
-              </button>
-            </div>
+            <h3 className="form-section-title">Employee Registration</h3>
 
             <div className="form-row-2col">
               <div className="form-group">
@@ -382,41 +363,39 @@ export const Login: React.FC = () => {
               </div>
             </div>
 
-            <div className="form-row-2col">
-              <div className="form-group">
-                <label className="form-label">Security Question</label>
-                <select
-                  className="form-control"
-                  value={securityQuestion}
-                  onChange={e => setSecurityQuestion(e.target.value)}
-                  disabled={isLoading}
-                >
-                  {securityQuestionOptions.map(q => (
-                    <option key={q} value={q}>{q}</option>
-                  ))}
-                </select>
-              </div>
+            <div className="form-group">
+              <label className="form-label">Security Question (For Account Recovery)</label>
+              <select
+                className="form-control"
+                value={securityQuestion}
+                onChange={e => setSecurityQuestion(e.target.value)}
+                disabled={isLoading}
+              >
+                {securityQuestionOptions.map(q => (
+                  <option key={q} value={q}>{q}</option>
+                ))}
+              </select>
+            </div>
 
-              <div className="form-group">
-                <label className="form-label">Security Answer</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter your secret answer"
-                  value={securityAnswer}
-                  onChange={e => setSecurityAnswer(e.target.value)}
-                  disabled={isLoading}
-                  maxLength={100}
-                  required
-                />
-              </div>
+            <div className="form-group">
+              <label className="form-label">Security Answer</label>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Enter your secret answer"
+                value={securityAnswer}
+                onChange={e => setSecurityAnswer(e.target.value)}
+                disabled={isLoading}
+                maxLength={100}
+                required
+              />
             </div>
 
             <button type="submit" className="btn btn-primary login-submit-btn" disabled={isLoading}>
               {isLoading ? (
                 <span className="spinner-loader"></span>
               ) : (
-                'Register Account'
+                'Register Employee Account'
               )}
             </button>
 
@@ -679,10 +658,18 @@ export const Login: React.FC = () => {
           line-height: 1.4;
         }
 
+        .login-card .form-group {
+          margin-bottom: 1rem;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+        }
+
         .login-card .form-label {
           color: #1e293b;
           font-weight: 600;
           font-size: 0.88rem;
+          margin-bottom: 0.35rem;
         }
 
         .login-card .form-control {
@@ -690,10 +677,26 @@ export const Login: React.FC = () => {
           color: #0f172a !important;
           border: 1.5px solid #cbd5e1 !important;
           font-size: 0.95rem;
-          padding: 0.75rem 1rem;
+          height: 46px;
+          line-height: 1.4;
+          padding: 0.65rem 1rem;
           border-radius: 10px;
           box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
           transition: all 0.2s ease;
+          width: 100%;
+          box-sizing: border-box;
+        }
+
+        .login-card select.form-control {
+          cursor: pointer;
+          background-color: #ffffff !important;
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E") !important;
+          background-repeat: no-repeat !important;
+          background-position: right 0.85rem center !important;
+          background-size: 1.1rem !important;
+          padding-right: 2.5rem !important;
+          appearance: none !important;
+          -webkit-appearance: none !important;
         }
 
         .login-card .form-control::placeholder {
