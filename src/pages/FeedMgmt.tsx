@@ -115,12 +115,7 @@ export const FeedMgmt: React.FC = () => {
       vendor: purchaseVendor
     };
 
-    if (!isAdmin) {
-      submitForApproval('FeedPurchase', purchaseData);
-      alert('✅ Feed purchase record submitted! It is now pending Admin approval.');
-    } else {
-      addFeedPurchase(purchaseData);
-    }
+    addFeedPurchase(purchaseData);
 
     setPurchaseVendor('');
     setPurchaseQty(0);

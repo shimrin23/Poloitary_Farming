@@ -72,6 +72,12 @@ export const EmployeeMgmt: React.FC = () => {
             <strong>🥚 Egg Collection:</strong> {data.collectedQty} collected · <span className="color-rose">{data.damagedQty} damaged</span> · <span className="color-emerald"><b>{data.netQty} usable net</b></span> (Date: {data.date})
           </div>
         );
+      case 'EggCollectionUpdate':
+        return (
+          <div>
+            <strong>🥚 Egg Collection Edit:</strong> Update to {data.collectedQty} collected · <span className="color-rose">{data.damagedQty} damaged</span> · <span className="color-emerald"><b>{data.netQty} usable net</b></span> (Date: {data.date})
+          </div>
+        );
       case 'Mortality':
         return (
           <div>
@@ -254,6 +260,7 @@ export const EmployeeMgmt: React.FC = () => {
             >
               <option value="all">All Record Types</option>
               <option value="EggCollection">🥚 Egg Collections</option>
+              <option value="EggCollectionUpdate">🥚 Egg Collection Edits</option>
               <option value="Mortality">💀 Mortality Logs</option>
               <option value="FeedConsumption">🌾 Feed Consumption</option>
               <option value="FeedConsumptionUpdate">🌾 Feed Consumption Edits</option>
@@ -309,6 +316,7 @@ export const EmployeeMgmt: React.FC = () => {
                         'admin'
                       }`} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}>
                         {sub.type === 'EggCollection' ? '🥚 Egg Log' :
+                         sub.type === 'EggCollectionUpdate' ? '🥚 Egg Edit' :
                          sub.type === 'Mortality' ? '💀 Mortality' :
                          sub.type === 'FeedConsumption' ? '🌾 Feed Use' :
                          sub.type === 'FeedConsumptionUpdate' ? '🌾 Feed Edit' :

@@ -131,6 +131,7 @@ export interface UserCredential {
 export type PendingSubmissionType = 
   | 'Mortality'
   | 'EggCollection'
+  | 'EggCollectionUpdate'
   | 'FeedConsumption'
   | 'FeedConsumptionUpdate'
   | 'FeedPurchase'
@@ -1909,6 +1910,14 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
         case 'EggCollection':
           addEggCollection(sub.data);
+          break;
+        case 'EggCollectionUpdate':
+          await updateEggCollection(sub.data.originalDate, {
+            date: sub.data.date,
+            collectedQty: Number(sub.data.collectedQty),
+            damagedQty: Number(sub.data.damagedQty),
+            netQty: Number(sub.data.netQty)
+          });
           break;
         case 'FeedConsumption':
           addFeedConsumption(sub.data);

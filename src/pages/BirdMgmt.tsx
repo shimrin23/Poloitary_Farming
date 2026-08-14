@@ -232,12 +232,7 @@ export const BirdMgmt: React.FC = () => {
       purchasePricePerKg: newType === 'Broiler' ? Number(newPricePerKg) : undefined
     };
 
-    if (!isAdmin) {
-      submitForApproval('BirdBatch', batchPayload);
-      alert('✅ Bird Batch registration submitted! It is now pending Admin approval.');
-    } else {
-      addBatch(batchPayload);
-    }
+    addBatch(batchPayload);
 
     // Reset and Close
     setNewBatchId('');

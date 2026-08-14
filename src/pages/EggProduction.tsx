@@ -48,12 +48,27 @@ export const EggProduction: React.FC = () => {
   const handleEditCollectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCollectionOriginalDate) return;
-    await updateEggCollection(editingCollectionOriginalDate, {
+
+    const payload = {
+      originalDate: editingCollectionOriginalDate,
       date: editCollectDate,
       collectedQty: Number(editCollectQty),
       damagedQty: Number(editCollectDamaged),
       netQty: Number(editCollectQty) - Number(editCollectDamaged)
-    });
+    };
+
+    if (!isAdmin) {
+      submitForApproval('EggCollectionUpdate', payload);
+      alert('✅ Egg collection edit submitted! It is now pending Admin approval.');
+    } else {
+      await updateEggCollection(editingCollectionOriginalDate, {
+        date: editCollectDate,
+        collectedQty: Number(editCollectQty),
+        damagedQty: Number(editCollectDamaged),
+        netQty: Number(editCollectQty) - Number(editCollectDamaged)
+      });
+    }
+
     setIsEditCollectModalOpen(false);
   };
 

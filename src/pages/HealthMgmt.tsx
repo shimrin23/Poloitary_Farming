@@ -320,9 +320,11 @@ export const HealthMgmt: React.FC = () => {
             <div className="hm-empty-state">
               <div className="hm-empty-icon">💉</div>
               <p>No vaccine schedules yet.</p>
-              <button className="btn btn-primary" style={{ marginTop: '0.75rem' }} onClick={() => setIsVaccineModalOpen(true)}>
-                📅 Schedule First Vaccine
-              </button>
+              {isAdmin && (
+                <button className="btn btn-primary" style={{ marginTop: '0.75rem' }} onClick={() => setIsVaccineModalOpen(true)}>
+                  📅 Schedule First Vaccine
+                </button>
+              )}
             </div>
           ) : (
             <div className="table-wrapper">
@@ -400,9 +402,11 @@ export const HealthMgmt: React.FC = () => {
             <div className="hm-empty-state">
               <div className="hm-empty-icon">🐔</div>
               <p>No diseases logged. Healthy flock!</p>
-              <button className="btn btn-primary" style={{ marginTop: '0.75rem' }} onClick={() => setIsMedicalModalOpen(true)}>
-                🩺 Add First Record
-              </button>
+              {isAdmin && (
+                <button className="btn btn-primary" style={{ marginTop: '0.75rem' }} onClick={() => setIsMedicalModalOpen(true)}>
+                  🩺 Add First Record
+                </button>
+              )}
             </div>
           ) : (
             <div className="table-wrapper">
