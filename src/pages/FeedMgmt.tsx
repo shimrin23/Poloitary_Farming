@@ -68,12 +68,27 @@ export const FeedMgmt: React.FC = () => {
   const handleEditConsumptionSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingConsumptionId) return;
-    await updateFeedConsumption(editingConsumptionId, {
+
+    const payload = {
+      consumptionId: editingConsumptionId,
       date: editConsumptionDate,
       feedType: editConsumptionType,
       batchId: editConsumptionBatchId,
       quantityKg: Number(editConsumptionQty)
-    });
+    };
+
+    if (!isAdmin) {
+      submitForApproval('FeedConsumptionUpdate', payload);
+      alert('✅ Feed consumption modification submitted! It is now pending Admin approval.');
+    } else {
+      await updateFeedConsumption(editingConsumptionId, {
+        date: editConsumptionDate,
+        feedType: editConsumptionType,
+        batchId: editConsumptionBatchId,
+        quantityKg: Number(editConsumptionQty)
+      });
+    }
+
     setIsEditConsumptionModalOpen(false);
   };
 

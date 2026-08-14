@@ -301,6 +301,7 @@ export const Dashboard: React.FC = () => {
                     if (sub.type === 'EggCollection') desc = `${sub.data.collectedQty} collected · ${sub.data.netQty} usable net`;
                     else if (sub.type === 'Mortality') desc = `${sub.data.quantity} birds lost (Reason: ${sub.data.reason})`;
                     else if (sub.type === 'FeedConsumption') desc = `${sub.data.quantityKg} kg ${sub.data.feedType} fed`;
+                    else if (sub.type === 'FeedConsumptionUpdate') desc = `Edit to ${sub.data.quantityKg} kg ${sub.data.feedType} for Batch ${sub.data.batchId}`;
                     else if (sub.type === 'FeedPurchase') desc = `${sub.data.quantityKg} kg ${sub.data.feedType} from ${sub.data.vendor}`;
                     else if (sub.type === 'VaccineSchedule') desc = `${sub.data.vaccineName}`;
                     else if (sub.type === 'VaccineStatusUpdate') desc = `Mark ${sub.data.vaccineName} as ${sub.data.status}`;

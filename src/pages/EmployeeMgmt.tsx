@@ -84,6 +84,12 @@ export const EmployeeMgmt: React.FC = () => {
             <strong>🌾 Feed Consumed:</strong> <b>{data.quantityKg} kg</b> of {data.feedType} fed to Batch <b>{data.batchId}</b> (Date: {data.date})
           </div>
         );
+      case 'FeedConsumptionUpdate':
+        return (
+          <div>
+            <strong>🌾 Feed Consumption Edit:</strong> Update to <b>{data.quantityKg} kg</b> of {data.feedType} for Batch <b>{data.batchId}</b> (Date: {data.date})
+          </div>
+        );
       case 'FeedPurchase':
         return (
           <div>
@@ -250,6 +256,7 @@ export const EmployeeMgmt: React.FC = () => {
               <option value="EggCollection">🥚 Egg Collections</option>
               <option value="Mortality">💀 Mortality Logs</option>
               <option value="FeedConsumption">🌾 Feed Consumption</option>
+              <option value="FeedConsumptionUpdate">🌾 Feed Consumption Edits</option>
               <option value="FeedPurchase">🛒 Feed Purchases</option>
               <option value="VaccineSchedule">💉 Vaccine Events</option>
               <option value="VaccineStatusUpdate">💉 Vaccine Status Updates</option>
@@ -308,6 +315,7 @@ export const EmployeeMgmt: React.FC = () => {
                         {sub.type === 'EggCollection' ? '🥚 Egg Log' :
                          sub.type === 'Mortality' ? '💀 Mortality' :
                          sub.type === 'FeedConsumption' ? '🌾 Feed Use' :
+                         sub.type === 'FeedConsumptionUpdate' ? '🌾 Feed Edit' :
                          sub.type === 'FeedPurchase' ? '🛒 Feed Buy' :
                          sub.type === 'VaccineSchedule' ? '💉 Vaccine' :
                          sub.type === 'VaccineStatusUpdate' ? '💉 Vaccine Done/Revert' :
