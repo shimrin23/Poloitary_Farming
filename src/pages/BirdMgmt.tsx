@@ -6,6 +6,7 @@ import { Modal } from '../components/Modal';
 export const BirdMgmt: React.FC = () => {
   const {
     batches,
+    usersList,
     addBatch,
     logMortality,
     updateMortalityLog,
@@ -17,6 +18,48 @@ export const BirdMgmt: React.FC = () => {
     currentUser
   } = useFarm();
   const isAdmin = currentUser?.role === 'Admin';
+
+  // Admin Verification for Selling Bird Batches
+  const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [adminAuthError, setAdminAuthError] = useState('');
+  const [pendingSellBatchId, setPendingSellBatchId] = useState<string | null>(null);
+
+  const handleInitiateSell = (batchId?: string) => {
+    setPendingSellBatchId(batchId || '');
+    setAdminPasswordInput('');
+    setAdminAuthError('');
+    setIsAdminAuthModalOpen(true);
+  };
+
+  const handleVerifyAdminAndExecute = async (ev?: React.FormEvent) => {
+    if (ev) ev.preventDefault();
+
+    const adminUser = usersList.find(u => u.role === 'Admin');
+    const isPasswordCorrect = adminUser 
+      ? adminUser.password === adminPasswordInput 
+      : (adminPasswordInput === 'admin' || adminPasswordInput === '2001-02-23');
+
+    if (!isPasswordCorrect) {
+      setAdminAuthError('❌ Incorrect Admin Password. Access denied.');
+      return;
+    }
+
+    setSellBatchId(pendingSellBatchId || '');
+    setSellQty(0);
+    setSellUnitPrice(0);
+    setSellWeightKg(0);
+    setSellPricePerKg(0);
+    setSellCustomer('');
+    setSellContact('');
+    setAdditionalCharges([]);
+    setIsSellModalOpen(true);
+
+    setIsAdminAuthModalOpen(false);
+    setPendingSellBatchId(null);
+    setAdminPasswordInput('');
+    setAdminAuthError('');
+  };
 
   // Tab Filter ('All' | 'Broiler' | 'Layer' | 'Archived' | 'MortalityAudit')
   const [filter, setFilter] = useState<'All' | 'Broiler' | 'Layer' | 'Archived' | 'MortalityAudit'>('All');
@@ -350,17 +393,7 @@ export const BirdMgmt: React.FC = () => {
           {isAdmin && (
             <button
               className="btn btn-secondary"
-              onClick={() => {
-                setSellBatchId('');
-                setSellQty(0);
-                setSellUnitPrice(0);
-                setSellWeightKg(0);
-                setSellPricePerKg(0);
-                setSellCustomer('');
-                setSellContact('');
-                setAdditionalCharges([]);
-                setIsSellModalOpen(true);
-              }}
+              onClick={() => handleInitiateSell()}
             >
               🐔 Sell Bird Batch
             </button>
@@ -440,17 +473,7 @@ export const BirdMgmt: React.FC = () => {
                             <button
                               className="btn btn-secondary btn-sm-custom"
                               style={{ color: 'var(--color-emerald)', borderColor: 'rgba(16, 185, 129, 0.3)' }}
-                              onClick={() => {
-                                setSellBatchId(batch.id);
-                                setSellQty(0);
-                                setSellUnitPrice(0);
-                                setSellWeightKg(0);
-                                setSellPricePerKg(0);
-                                setSellCustomer('');
-                                setSellContact('');
-                                setAdditionalCharges([]);
-                                setIsSellModalOpen(true);
-                              }}
+                              onClick={() => handleInitiateSell(batch.id)}
                             >
                               💰 Sell
                             </button>
@@ -1357,6 +1380,70 @@ export const BirdMgmt: React.FC = () => {
               style={{ resize: 'vertical' }}
             ></textarea>
           </div>
+        </form>
+      </Modal>
+
+      {/* ── Admin Password Approval Modal for Selling Bird Batches ── */}
+      <Modal
+        isOpen={isAdminAuthModalOpen}
+        onClose={() => {
+          setIsAdminAuthModalOpen(false);
+          setPendingSellBatchId(null);
+          setAdminPasswordInput('');
+          setAdminAuthError('');
+        }}
+        title="🔐 Security Verification: Admin Approval Required"
+        footer={
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', width: '100%' }}>
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={() => {
+                setIsAdminAuthModalOpen(false);
+                setPendingSellBatchId(null);
+                setAdminPasswordInput('');
+                setAdminAuthError('');
+              }}
+            >
+              Cancel
+            </button>
+            <button className="btn btn-success" type="button" onClick={handleVerifyAdminAndExecute}>
+              🔑 Verify & Open Sale
+            </button>
+          </div>
+        }
+      >
+        <form onSubmit={handleVerifyAdminAndExecute} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)' }}>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+              🔒 Admin Password Required
+            </p>
+            <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              Selling a bird batch and altering flock inventory requires administrator verification.
+            </p>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" style={{ fontWeight: 600 }}>Admin Password</label>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="Enter Admin Password"
+              value={adminPasswordInput}
+              onChange={ev => {
+                setAdminPasswordInput(ev.target.value);
+                setAdminAuthError('');
+              }}
+              autoFocus
+              required
+            />
+          </div>
+
+          {adminAuthError && (
+            <div style={{ color: 'var(--color-rose)', fontSize: '0.82rem', fontWeight: 600 }}>
+              {adminAuthError}
+            </div>
+          )}
         </form>
       </Modal>
 
