@@ -490,19 +490,23 @@ export const BirdMgmt: React.FC = () => {
                             >
                               ☠️ Death
                             </button>
-                            <button
-                              className="btn btn-secondary btn-sm-custom"
-                              style={{ color: 'var(--color-emerald)', borderColor: 'rgba(16, 185, 129, 0.3)' }}
-                              onClick={() => handleInitiateSell(batch.id)}
-                            >
-                              💰 Sell
-                            </button>
-                            <button
-                              className="btn btn-secondary btn-sm-custom"
-                              onClick={() => handleOpenEdit(batch)}
-                            >
-                              ✏️ Edit
-                            </button>
+                            {isAdmin && (
+                              <>
+                                <button
+                                  className="btn btn-secondary btn-sm-custom"
+                                  style={{ color: 'var(--color-emerald)', borderColor: 'rgba(16, 185, 129, 0.3)' }}
+                                  onClick={() => handleInitiateSell(batch.id)}
+                                >
+                                  💰 Sell
+                                </button>
+                                <button
+                                  className="btn btn-secondary btn-sm-custom"
+                                  onClick={() => handleOpenEdit(batch)}
+                                >
+                                  ✏️ Edit
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -564,26 +568,30 @@ export const BirdMgmt: React.FC = () => {
                           <span className="status-dot pending" style={{ background: '#64748b' }}></span> Sold Out / Archived
                         </td>
                         <td>
-                          <div className="batch-action-group">
-                            <button
-                              className="btn btn-secondary btn-sm-custom"
-                              onClick={() => handleOpenEdit(batch)}
-                              title="Edit Archived Batch Details"
-                            >
-                              ✏️ Edit
-                            </button>
-                            <button
-                              className="btn btn-danger btn-sm-custom"
-                              onClick={() => {
-                                if (confirm(`Permanently delete Archived Batch ${batch.id}?`)) {
-                                  deleteBatch(batch.id);
-                                }
-                              }}
-                              title="Delete Archived Batch"
-                            >
-                              🗑️ Delete
-                            </button>
-                          </div>
+                          {isAdmin ? (
+                            <div className="batch-action-group">
+                              <button
+                                className="btn btn-secondary btn-sm-custom"
+                                onClick={() => handleOpenEdit(batch)}
+                                title="Edit Archived Batch Details"
+                              >
+                                ✏️ Edit
+                              </button>
+                              <button
+                                className="btn btn-danger btn-sm-custom"
+                                onClick={() => {
+                                  if (confirm(`Permanently delete Archived Batch ${batch.id}?`)) {
+                                    deleteBatch(batch.id);
+                                  }
+                                }}
+                                title="Delete Archived Batch"
+                              >
+                                🗑️ Delete
+                              </button>
+                            </div>
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
+                          )}
                         </td>
                       </tr>
                     );
