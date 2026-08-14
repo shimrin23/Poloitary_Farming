@@ -7,6 +7,7 @@ export const HealthMgmt: React.FC = () => {
     batches, 
     vaccines, 
     medicalRecords, 
+    usersList,
     addVaccineSchedule, 
     updateVaccineStatus, 
     addMedicalRecord, 
@@ -22,6 +23,45 @@ export const HealthMgmt: React.FC = () => {
   const [isVaccineModalOpen, setIsVaccineModalOpen] = useState(false);
   const [isMedicalModalOpen, setIsMedicalModalOpen] = useState(false);
   
+  // Admin Verification for Vaccine Status (Mark Done / Revert)
+  const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [adminAuthError, setAdminAuthError] = useState('');
+  const [pendingVaccineAction, setPendingVaccineAction] = useState<{ id: string; status: 'Completed' | 'Pending' } | null>(null);
+
+  const handleInitiateVaccineStatus = (id: string, status: 'Completed' | 'Pending') => {
+    setPendingVaccineAction({ id, status });
+    setAdminPasswordInput('');
+    setAdminAuthError('');
+    setIsAdminAuthModalOpen(true);
+  };
+
+  const handleVerifyAdminAndExecute = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!pendingVaccineAction) return;
+
+    const adminUser = usersList.find(u => u.role === 'Admin');
+    const isPasswordCorrect = adminUser 
+      ? adminUser.password === adminPasswordInput 
+      : (adminPasswordInput === 'admin' || adminPasswordInput === '2001-02-23');
+
+    if (!isPasswordCorrect) {
+      setAdminAuthError('❌ Incorrect Admin Password. Access denied.');
+      return;
+    }
+
+    try {
+      await updateVaccineStatus(pendingVaccineAction.id, pendingVaccineAction.status);
+      setIsAdminAuthModalOpen(false);
+      setPendingVaccineAction(null);
+      setAdminPasswordInput('');
+      setAdminAuthError('');
+    } catch (err) {
+      console.error('Vaccine status update failed:', err);
+      setAdminAuthError('❌ Failed to update immunization status. Please try again.');
+    }
+  };
+
   // Edit Vaccine States
   const [isEditVaccineModalOpen, setIsEditVaccineModalOpen] = useState(false);
   const [editingVaccineId, setEditingVaccineId] = useState('');
@@ -268,11 +308,11 @@ export const HealthMgmt: React.FC = () => {
                       <td>
                         <div style={{ display: 'flex', gap: '0.35rem' }}>
                           {v.status === 'Pending' ? (
-                            <button className="btn btn-primary btn-xs-custom" onClick={() => updateVaccineStatus(v.id, 'Completed')}>
+                            <button className="btn btn-primary btn-xs-custom" onClick={() => handleInitiateVaccineStatus(v.id, 'Completed')}>
                               ✓ Mark Done
                             </button>
                           ) : (
-                            <button className="btn btn-secondary btn-xs-custom" onClick={() => updateVaccineStatus(v.id, 'Pending')}>
+                            <button className="btn btn-secondary btn-xs-custom" onClick={() => handleInitiateVaccineStatus(v.id, 'Pending')}>
                               ↺ Revert
                             </button>
                           )}
@@ -867,6 +907,70 @@ export const HealthMgmt: React.FC = () => {
               style={{ resize: 'vertical' }}
             />
           </div>
+        </form>
+      </Modal>
+
+      {/* ── Admin Password Approval Modal for Vaccine Status ── */}
+      <Modal
+        isOpen={isAdminAuthModalOpen}
+        onClose={() => {
+          setIsAdminAuthModalOpen(false);
+          setPendingVaccineAction(null);
+          setAdminPasswordInput('');
+          setAdminAuthError('');
+        }}
+        title="🔐 Security Verification: Admin Approval Required"
+        footer={
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', width: '100%' }}>
+            <button
+              className="btn btn-secondary"
+              type="button"
+              onClick={() => {
+                setIsAdminAuthModalOpen(false);
+                setPendingVaccineAction(null);
+                setAdminPasswordInput('');
+                setAdminAuthError('');
+              }}
+            >
+              Cancel
+            </button>
+            <button className="btn btn-success" type="button" onClick={handleVerifyAdminAndExecute}>
+              🔑 Verify & Update
+            </button>
+          </div>
+        }
+      >
+        <form onSubmit={handleVerifyAdminAndExecute} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)' }}>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: 600 }}>
+              🔒 Admin Password Required
+            </p>
+            <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+              Marking an immunization / vaccine task as completed or updating its status requires administrator verification.
+            </p>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" style={{ fontWeight: 600 }}>Admin Password</label>
+            <input
+              type="password"
+              className="form-control"
+              placeholder="Enter Admin Password"
+              value={adminPasswordInput}
+              onChange={e => {
+                setAdminPasswordInput(e.target.value);
+                setAdminAuthError('');
+              }}
+              autoFocus
+              required
+            />
+          </div>
+
+          {adminAuthError && (
+            <div style={{ color: 'var(--color-rose)', fontSize: '0.82rem', fontWeight: 600 }}>
+              {adminAuthError}
+            </div>
+          )}
         </form>
       </Modal>
 
