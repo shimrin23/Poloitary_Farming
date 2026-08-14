@@ -32,6 +32,20 @@ export const HealthMgmt: React.FC = () => {
   const [adminAuthError, setAdminAuthError] = useState('');
   const [pendingEditVaccine, setPendingEditVaccine] = useState<any | null>(null);
 
+  const handleStatusAction = (v: any, targetStatus: 'Completed' | 'Pending') => {
+    if (!isAdmin) {
+      submitForApproval('VaccineStatusUpdate', {
+        vaccineId: v.id,
+        vaccineName: v.vaccineName,
+        batchId: v.batchId,
+        status: targetStatus
+      });
+      alert(`✅ Immunization mark ${targetStatus === 'Completed' ? 'Done' : 'Revert'} submitted! It is now pending Admin approval.`);
+    } else {
+      updateVaccineStatus(v.id, targetStatus);
+    }
+  };
+
   const handleInitiateEditVaccine = (v: any) => {
     setPendingEditVaccine(v);
     setAdminPasswordInput('');
@@ -334,17 +348,25 @@ export const HealthMgmt: React.FC = () => {
                         </span>
                       </td>
                       <td>
-                        {isAdmin ? (
-                          <div style={{ display: 'flex', gap: '0.35rem' }}>
-                            {v.status === 'Pending' ? (
-                              <button className="btn btn-primary btn-xs-custom" onClick={() => updateVaccineStatus(v.id, 'Completed')}>
-                                ✓ Mark Done
-                              </button>
-                            ) : (
-                              <button className="btn btn-secondary btn-xs-custom" onClick={() => updateVaccineStatus(v.id, 'Pending')}>
-                                ↺ Revert
-                              </button>
-                            )}
+                        <div style={{ display: 'flex', gap: '0.35rem' }}>
+                          {v.status === 'Pending' ? (
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-xs-custom"
+                              onClick={() => handleStatusAction(v, 'Completed')}
+                            >
+                              ✓ Mark Done
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-xs-custom"
+                              onClick={() => handleStatusAction(v, 'Pending')}
+                            >
+                              ↺ Revert
+                            </button>
+                          )}
+                          {isAdmin && (
                             <button
                               type="button"
                               className="btn btn-secondary btn-xs-custom"
@@ -352,22 +374,8 @@ export const HealthMgmt: React.FC = () => {
                             >
                               ✏️ Edit
                             </button>
-                          </div>
-                        ) : (
-                          <div style={{ display: 'flex', gap: '0.35rem' }}>
-                            {v.status === 'Pending' ? (
-                              <button
-                                type="button"
-                                className="btn btn-primary btn-xs-custom"
-                                onClick={() => updateVaccineStatus(v.id, 'Completed')}
-                              >
-                                ✓ Mark Done
-                              </button>
-                            ) : (
-                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>—</span>
-                            )}
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

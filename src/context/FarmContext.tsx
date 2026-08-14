@@ -134,6 +134,7 @@ export type PendingSubmissionType =
   | 'FeedConsumption'
   | 'FeedPurchase'
   | 'VaccineSchedule'
+  | 'VaccineStatusUpdate'
   | 'MedicalRecord'
   | 'BirdBatch';
 
@@ -1916,6 +1917,9 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
           break;
         case 'VaccineSchedule':
           addVaccineSchedule(sub.data);
+          break;
+        case 'VaccineStatusUpdate':
+          await updateVaccineStatus(sub.data.vaccineId, sub.data.status);
           break;
         case 'MedicalRecord':
           addMedicalRecord(sub.data);

@@ -303,6 +303,7 @@ export const Dashboard: React.FC = () => {
                     else if (sub.type === 'FeedConsumption') desc = `${sub.data.quantityKg} kg ${sub.data.feedType} fed`;
                     else if (sub.type === 'FeedPurchase') desc = `${sub.data.quantityKg} kg ${sub.data.feedType} from ${sub.data.vendor}`;
                     else if (sub.type === 'VaccineSchedule') desc = `${sub.data.vaccineName}`;
+                    else if (sub.type === 'VaccineStatusUpdate') desc = `Mark ${sub.data.vaccineName} as ${sub.data.status}`;
                     else if (sub.type === 'MedicalRecord') desc = `${sub.data.disease} (${sub.data.medicine})`;
                     else if (sub.type === 'BirdBatch') desc = `Batch ${sub.data.id} (${sub.data.initialQuantity} birds)`;
 

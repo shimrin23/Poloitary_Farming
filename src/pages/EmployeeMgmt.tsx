@@ -96,6 +96,12 @@ export const EmployeeMgmt: React.FC = () => {
             <strong>💉 Vaccine Event:</strong> <b>{data.vaccineName}</b> scheduled for Batch <b>{data.batchId}</b> on {data.scheduledDate}
           </div>
         );
+      case 'VaccineStatusUpdate':
+        return (
+          <div>
+            <strong>💉 Immunization Status:</strong> Mark <b>{data.vaccineName}</b> for Batch <b>{data.batchId}</b> as <span className={data.status === 'Completed' ? 'color-emerald' : 'color-amber'}><b>{data.status}</b></span>
+          </div>
+        );
       case 'MedicalRecord':
         return (
           <div>
@@ -238,6 +244,7 @@ export const EmployeeMgmt: React.FC = () => {
               <option value="FeedConsumption">🌾 Feed Consumption</option>
               <option value="FeedPurchase">🛒 Feed Purchases</option>
               <option value="VaccineSchedule">💉 Vaccine Events</option>
+              <option value="VaccineStatusUpdate">💉 Vaccine Status Updates</option>
               <option value="MedicalRecord">🩺 Medical Records</option>
               <option value="BirdBatch">🐥 Bird Batches</option>
             </select>
@@ -295,6 +302,7 @@ export const EmployeeMgmt: React.FC = () => {
                          sub.type === 'FeedConsumption' ? '🌾 Feed Use' :
                          sub.type === 'FeedPurchase' ? '🛒 Feed Buy' :
                          sub.type === 'VaccineSchedule' ? '💉 Vaccine' :
+                         sub.type === 'VaccineStatusUpdate' ? '💉 Vaccine Done/Revert' :
                          sub.type === 'MedicalRecord' ? '🩺 Remedy' : '🐥 Bird Batch'}
                       </span>
                     </td>
