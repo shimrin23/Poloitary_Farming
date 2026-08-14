@@ -212,7 +212,7 @@ export const Login: React.FC = () => {
         <div className="glow glow-2"></div>
       </div>
 
-      <div className="login-card glass-card">
+      <div className={`login-card glass-card ${mode === 'signup' ? 'signup-card' : ''}`}>
         <div className="login-header">
           <div className="login-logo">🐔</div>
           <h2>AKSHA POULTRY FARMS</h2>
@@ -310,30 +310,32 @@ export const Login: React.FC = () => {
               </button>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Full Name / Employee Name</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="e.g. Rahul Sharma"
-                value={fullName}
-                onChange={e => setFullName(e.target.value)}
-                disabled={isLoading}
-                maxLength={100}
-                required
-              />
-            </div>
+            <div className="form-row-2col">
+              <div className="form-group">
+                <label className="form-label">Full Name / Employee Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="e.g. Rahul Sharma"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  disabled={isLoading}
+                  maxLength={100}
+                  required
+                />
+              </div>
 
-            <div className="form-group">
-              <label className="form-label">Date of Birth (DOB)</label>
-              <input
-                type="date"
-                className="form-control"
-                value={dob}
-                onChange={e => setDob(e.target.value)}
-                disabled={isLoading}
-                required
-              />
+              <div className="form-group">
+                <label className="form-label">Date of Birth (DOB)</label>
+                <input
+                  type="date"
+                  className="form-control"
+                  value={dob}
+                  onChange={e => setDob(e.target.value)}
+                  disabled={isLoading}
+                  required
+                />
+              </div>
             </div>
 
             <div className="form-group">
@@ -350,60 +352,64 @@ export const Login: React.FC = () => {
               />
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Password</label>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="Min 4 characters"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                disabled={isLoading}
-                maxLength={64}
-                required
-              />
+            <div className="form-row-2col">
+              <div className="form-group">
+                <label className="form-label">Password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Min 4 characters"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  disabled={isLoading}
+                  maxLength={64}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Confirm Password</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  placeholder="Re-enter password"
+                  value={confirmPassword}
+                  onChange={e => setConfirmPassword(e.target.value)}
+                  disabled={isLoading}
+                  maxLength={64}
+                  required
+                />
+              </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label">Confirm Password</label>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="Re-enter password"
-                value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
-                disabled={isLoading}
-                maxLength={64}
-                required
-              />
-            </div>
+            <div className="form-row-2col">
+              <div className="form-group">
+                <label className="form-label">Security Question</label>
+                <select
+                  className="form-control"
+                  value={securityQuestion}
+                  onChange={e => setSecurityQuestion(e.target.value)}
+                  disabled={isLoading}
+                >
+                  {securityQuestionOptions.map(q => (
+                    <option key={q} value={q}>{q}</option>
+                  ))}
+                </select>
+              </div>
 
-            <div className="form-group">
-              <label className="form-label">Security Question (For Password Reset)</label>
-              <select
-                className="form-control"
-                value={securityQuestion}
-                onChange={e => setSecurityQuestion(e.target.value)}
-                disabled={isLoading}
-              >
-                {securityQuestionOptions.map(q => (
-                  <option key={q} value={q}>{q}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Security Answer</label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Enter your secret answer"
-                value={securityAnswer}
-                onChange={e => setSecurityAnswer(e.target.value)}
-                disabled={isLoading}
-                maxLength={100}
-                required
-              />
+              <div className="form-group">
+                <label className="form-label">Security Answer</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Enter your secret answer"
+                  value={securityAnswer}
+                  onChange={e => setSecurityAnswer(e.target.value)}
+                  disabled={isLoading}
+                  maxLength={100}
+                  required
+                />
+              </div>
             </div>
 
             <button type="submit" className="btn btn-primary login-submit-btn" disabled={isLoading}>
@@ -559,24 +565,28 @@ export const Login: React.FC = () => {
       <style>{`
         .login-container {
           width: 100vw;
-          height: 100vh;
+          min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
           background: linear-gradient(135deg, #f0fdf4 0%, #e2e8f0 45%, #ecfdf5 100%);
           position: relative;
-          overflow: hidden;
+          overflow-y: auto;
+          overflow-x: hidden;
+          padding: 2.5rem 1rem;
+          box-sizing: border-box;
           font-family: var(--font-family);
         }
 
         .login-bg-glows {
-          position: absolute;
+          position: fixed;
           width: 100%;
           height: 100%;
           top: 0;
           left: 0;
           z-index: 0;
           overflow: hidden;
+          pointer-events: none;
         }
 
         .login-bg-glows .glow {
@@ -604,16 +614,28 @@ export const Login: React.FC = () => {
 
         .login-card {
           width: 100%;
-          max-width: 420px;
+          max-width: 440px;
           padding: 2.25rem !important;
           z-index: 10;
           border-radius: 20px !important;
-          background: rgba(255, 255, 255, 0.94);
+          background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(20px);
           -webkit-backdrop-filter: blur(20px);
           box-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.12), 0 0 25px rgba(16, 185, 129, 0.08);
           border: 1px solid rgba(16, 185, 129, 0.2);
           transition: all 0.3s ease;
+          margin: auto;
+        }
+
+        .login-card.signup-card {
+          max-width: 580px;
+          padding: 2rem !important;
+        }
+
+        .form-row-2col {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.75rem;
         }
 
         .login-header {
@@ -820,11 +842,22 @@ export const Login: React.FC = () => {
           to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 560px) {
+          .login-container {
+            padding: 1.25rem 0.75rem;
+          }
           .login-card {
-            padding: 1.5rem !important;
-            margin: 1rem;
-            max-width: calc(100% - 2rem);
+            padding: 1.5rem 1.2rem !important;
+            margin: 0.5rem auto;
+            max-width: 100%;
+            border-radius: 16px !important;
+          }
+          .login-card.signup-card {
+            padding: 1.5rem 1.2rem !important;
+          }
+          .form-row-2col {
+            grid-template-columns: 1fr;
+            gap: 0;
           }
           .role-selector {
             flex-direction: column;
