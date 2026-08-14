@@ -447,11 +447,11 @@ export const BirdMgmt: React.FC = () => {
                     <th>Arrival Date</th>
                     <th>Age (Days)</th>
                     <th>Initial Birds</th>
-                    <th>Weight / Price</th>
+                    {isAdmin && <th>Weight / Price</th>}
                     <th>Sold Birds</th>
                     <th>Mortality</th>
                     <th>Current Qty</th>
-                    <th>Cost/Bird</th>
+                    {isAdmin && <th>Cost/Bird</th>}
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -470,15 +470,17 @@ export const BirdMgmt: React.FC = () => {
                         <td>{batch.arrivalDate}</td>
                         <td><b>{calculateAgeDays(batch.arrivalDate)} days</b></td>
                         <td>{batch.initialQuantity.toLocaleString()}</td>
-                        <td>
-                          {batch.type === 'Broiler' && batch.initialQuantityKg
-                            ? `${batch.initialQuantityKg.toLocaleString()} kg @ Rs ${batch.purchasePricePerKg?.toFixed(2)}/kg`
-                            : `Rs ${batch.purchasePrice.toFixed(2)} / bird`}
-                        </td>
+                        {isAdmin && (
+                          <td>
+                            {batch.type === 'Broiler' && batch.initialQuantityKg
+                              ? `${batch.initialQuantityKg.toLocaleString()} kg @ Rs ${batch.purchasePricePerKg?.toFixed(2)}/kg`
+                              : `Rs ${batch.purchasePrice.toFixed(2)} / bird`}
+                          </td>
+                        )}
                         <td><strong>{totalSold > 0 ? `${totalSold.toLocaleString()} birds` : '0'}</strong></td>
                         <td>{totalDead > 0 ? `💀 ${totalDead}` : '0'}</td>
                         <td><span className="current-qty-active">🐔 {batch.currentQuantity.toLocaleString()}</span></td>
-                        <td>Rs {batch.purchasePrice.toFixed(2)}</td>
+                        {isAdmin && <td>Rs {batch.purchasePrice.toFixed(2)}</td>}
                         <td>
                           <div className="batch-action-group">
                             <button
