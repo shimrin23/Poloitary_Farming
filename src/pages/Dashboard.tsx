@@ -3,7 +3,8 @@ import { useFarm } from '../context/FarmContext';
 import type { FeedType } from '../context/FarmContext';
 
 export const Dashboard: React.FC = () => {
-  const { batches, eggCollections, sales, expenses, getFeedStock, currentUser } = useFarm();
+  const { batches, eggCollections, sales, expenses, getFeedStock, currentUser, pendingSubmissions } = useFarm();
+  const isAdmin = currentUser?.role === 'Admin';
 
   // 1. KPI Calculations
   const activeBirds = batches
@@ -84,8 +85,6 @@ export const Dashboard: React.FC = () => {
       });
     });
   });
-
-  const isAdmin = currentUser?.role === 'Admin';
 
   if (isAdmin) {
     sales.slice(0, 3).forEach(s => {
@@ -258,6 +257,78 @@ export const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Employee Submissions & Approval Status */}
+      {(() => {
+        const userSubs = isAdmin 
+          ? pendingSubmissions.filter(s => s.status === 'Pending')
+          : pendingSubmissions.filter(s => s.submittedBy.toLowerCase() === (currentUser?.username || '').toLowerCase());
+        
+        if (userSubs.length === 0) return null;
+
+        return (
+          <div className="glass-card" style={{ border: '1px solid rgba(245, 158, 11, 0.35)', background: 'rgba(245, 158, 11, 0.03)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <span style={{ fontSize: '1.3rem' }}>⏳</span>
+                <div>
+                  <h4 style={{ margin: 0, color: 'var(--color-amber)' }}>
+                    {isAdmin ? 'Farm Submissions Requiring Your Approval' : 'My Recent Submissions & Approval Status'}
+                  </h4>
+                  <p style={{ margin: '0.15rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    {isAdmin 
+                      ? `${userSubs.length} employee record(s) pending review in Employee Management.`
+                      : 'Records logged by you stay pending until reviewed and approved by an administrator.'}
+                  </p>
+                </div>
+              </div>
+              <span className="badge badge-amber">{userSubs.filter(s => s.status === 'Pending').length} Pending</span>
+            </div>
+
+            <div className="table-wrapper" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Type</th>
+                    <th>Date / Batch</th>
+                    <th>Submission Summary</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {userSubs.slice(0, 5).map(sub => {
+                    let desc = '';
+                    if (sub.type === 'EggCollection') desc = `${sub.data.collectedQty} collected · ${sub.data.netQty} usable net`;
+                    else if (sub.type === 'Mortality') desc = `${sub.data.quantity} birds lost (Reason: ${sub.data.reason})`;
+                    else if (sub.type === 'FeedConsumption') desc = `${sub.data.quantityKg} kg ${sub.data.feedType} fed`;
+                    else if (sub.type === 'FeedPurchase') desc = `${sub.data.quantityKg} kg ${sub.data.feedType} from ${sub.data.vendor}`;
+                    else if (sub.type === 'VaccineSchedule') desc = `${sub.data.vaccineName}`;
+                    else if (sub.type === 'MedicalRecord') desc = `${sub.data.disease} (${sub.data.medicine})`;
+                    else if (sub.type === 'BirdBatch') desc = `Batch ${sub.data.id} (${sub.data.initialQuantity} birds)`;
+
+                    return (
+                      <tr key={sub.id}>
+                        <td>
+                          <span className="role-badge employee" style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem' }}>
+                            {sub.type}
+                          </span>
+                        </td>
+                        <td>{sub.data.date || sub.data.scheduledDate || sub.data.arrivalDate || '—'} {sub.data.batchId ? `(Batch ${sub.data.batchId})` : ''}</td>
+                        <td style={{ fontSize: '0.82rem' }}>{desc}</td>
+                        <td>
+                          <span className={`badge ${sub.status === 'Pending' ? 'badge-amber' : sub.status === 'Approved' ? 'badge-emerald' : 'badge-rose'}`}>
+                            {sub.status === 'Pending' ? '⏳ Pending Review' : sub.status === 'Approved' ? '✅ Approved' : '❌ Rejected'}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 3. Bottom Row: Quick Tasks & Logs */}
       <div className="grid-cols-2 activity-row-container">

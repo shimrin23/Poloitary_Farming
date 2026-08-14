@@ -3,8 +3,24 @@ import { useFarm } from '../context/FarmContext';
 import { Modal } from '../components/Modal';
 
 export const EmployeeMgmt: React.FC = () => {
-  const { usersList, approveUser, updateUserRole, deleteUser, currentUser } = useFarm();
+  const { 
+    usersList, 
+    approveUser, 
+    updateUserRole, 
+    deleteUser, 
+    currentUser,
+    pendingSubmissions,
+    approveSubmission,
+    rejectSubmission,
+    deletePendingSubmission
+  } = useFarm();
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Submission Queue Filter Tab ('pending' | 'approved' | 'rejected' | 'all')
+  const [submissionTab, setSubmissionTab] = useState<'pending' | 'approved' | 'rejected' | 'all'>('pending');
+  const [submissionTypeFilter, setSubmissionTypeFilter] = useState<string>('all');
+  const [rejectModalSubId, setRejectModalSubId] = useState<string | null>(null);
+  const [rejectReasonInput, setRejectReasonInput] = useState('');
 
   // Admin Verification for Role Switch
   const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
@@ -38,12 +54,79 @@ export const EmployeeMgmt: React.FC = () => {
     setAdminAuthError('');
   };
 
+  const handleConfirmReject = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!rejectModalSubId) return;
+    rejectSubmission(rejectModalSubId, rejectReasonInput.trim() || 'Declined by Administrator');
+    setRejectModalSubId(null);
+    setRejectReasonInput('');
+  };
+
+  // Helper to format submission data
+  const renderSubmissionDetails = (sub: any) => {
+    const { type, data } = sub;
+    switch (type) {
+      case 'EggCollection':
+        return (
+          <div>
+            <strong>🥚 Egg Collection:</strong> {data.collectedQty} collected · <span className="color-rose">{data.damagedQty} damaged</span> · <span className="color-emerald"><b>{data.netQty} usable net</b></span> (Date: {data.date})
+          </div>
+        );
+      case 'Mortality':
+        return (
+          <div>
+            <strong>💀 Bird Mortality:</strong> <span className="color-rose"><b>{data.quantity} birds</b></span> lost in Batch <b>{data.batchId}</b> · Reason: <em>{data.reason}</em> (Date: {data.date})
+          </div>
+        );
+      case 'FeedConsumption':
+        return (
+          <div>
+            <strong>🌾 Feed Consumed:</strong> <b>{data.quantityKg} kg</b> of {data.feedType} fed to Batch <b>{data.batchId}</b> (Date: {data.date})
+          </div>
+        );
+      case 'FeedPurchase':
+        return (
+          <div>
+            <strong>🛒 Feed Purchase:</strong> <b>{data.quantityKg} kg</b> of {data.feedType} @ Rs {data.cost?.toLocaleString()} from {data.vendor} (Date: {data.date})
+          </div>
+        );
+      case 'VaccineSchedule':
+        return (
+          <div>
+            <strong>💉 Vaccine Event:</strong> <b>{data.vaccineName}</b> scheduled for Batch <b>{data.batchId}</b> on {data.scheduledDate}
+          </div>
+        );
+      case 'MedicalRecord':
+        return (
+          <div>
+            <strong>🩺 Medical Remedy:</strong> Batch <b>{data.batchId}</b> · Disease: <em>{data.disease}</em> · Remedy: <b>{data.medicine}</b> ({data.dosage}) · Cost: Rs {data.cost} (Date: {data.date})
+          </div>
+        );
+      case 'BirdBatch':
+        return (
+          <div>
+            <strong>🐥 New Bird Batch:</strong> Batch <b>{data.id}</b> ({data.type}) · {data.initialQuantity} birds @ Rs {data.purchasePrice}/bird (Arrival: {data.arrivalDate})
+          </div>
+        );
+      default:
+        return <div>{JSON.stringify(data)}</div>;
+    }
+  };
+
+  // Filtered Submissions
+  const filteredSubmissions = pendingSubmissions.filter(sub => {
+    if (submissionTab !== 'all' && sub.status.toLowerCase() !== submissionTab) return false;
+    if (submissionTypeFilter !== 'all' && sub.type !== submissionTypeFilter) return false;
+    return true;
+  });
+
   // Statistics
   const totalUsers = usersList.length;
   const pendingUsers = usersList.filter(u => !u.approved);
   const approvedUsers = usersList.filter(u => u.approved);
   const activeAdmins = approvedUsers.filter(u => u.role === 'Admin').length;
   const activeEmployees = approvedUsers.filter(u => u.role === 'Employee').length;
+  const pendingSubsCount = pendingSubmissions.filter(s => s.status === 'Pending').length;
 
   const filteredApproved = approvedUsers.filter(u =>
     u.username.toLowerCase().includes(searchTerm.toLowerCase())
@@ -65,32 +148,225 @@ export const EmployeeMgmt: React.FC = () => {
         <div className="glass-card stat-card border-emerald">
           <div className="stat-icon">👑</div>
           <div className="stat-data">
-            <span className="stat-label">Active Admins</span>
-            <h3 className="stat-value">{activeAdmins}</h3>
-            <span className="stat-subtext">Full permissions</span>
-          </div>
-        </div>
-
-        <div className="glass-card stat-card border-cyan">
-          <div className="stat-icon">🧑‍🌾</div>
-          <div className="stat-data">
-            <span className="stat-label">Active Employees</span>
-            <h3 className="stat-value">{activeEmployees}</h3>
-            <span className="stat-subtext">Limited permissions</span>
+            <span className="stat-label">Active Staff</span>
+            <h3 className="stat-value">{activeEmployees} Emp · {activeAdmins} Adm</h3>
+            <span className="stat-subtext">Registered team</span>
           </div>
         </div>
 
         <div className="glass-card stat-card border-amber">
           <div className="stat-icon">⌛</div>
           <div className="stat-data">
-            <span className="stat-label">Pending Approval</span>
+            <span className="stat-label">Pending Accounts</span>
             <h3 className="stat-value color-amber">{pendingUsers.length}</h3>
-            <span className="stat-subtext">Require admin action</span>
+            <span className="stat-subtext">Require registration approval</span>
+          </div>
+        </div>
+
+        <div className="glass-card stat-card border-cyan">
+          <div className="stat-icon">📋</div>
+          <div className="stat-data">
+            <span className="stat-label">Pending Farm Logs</span>
+            <h3 className="stat-value color-cyan">{pendingSubsCount}</h3>
+            <span className="stat-subtext">Awaiting admin review</span>
           </div>
         </div>
       </div>
 
-      {/* 2. Pending Approvals Section */}
+      {/* 2. Employee Farm Activity & Submission Approvals Queue */}
+      <div className="glass-card table-section" style={{ border: pendingSubsCount > 0 ? '1px solid rgba(245, 158, 11, 0.4)' : undefined }}>
+        <div className="section-header" style={{ flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <h4 style={{ margin: 0 }}>📋 Employee Farm Submissions & Approval Queue</h4>
+              {pendingSubsCount > 0 && (
+                <span className="badge badge-amber">{pendingSubsCount} Pending Review</span>
+              )}
+            </div>
+            <p className="subtitle" style={{ margin: '0.25rem 0 0 0' }}>
+              Logs and records added by farm employees remain pending until approved by an administrator
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {/* Status Filter Tabs */}
+            <div className="filter-tabs" style={{ display: 'flex', gap: '0.35rem', background: 'rgba(255,255,255,0.04)', padding: '0.2rem', borderRadius: 'var(--radius-sm)' }}>
+              <button
+                type="button"
+                className={`tab-btn ${submissionTab === 'pending' ? 'active' : ''}`}
+                onClick={() => setSubmissionTab('pending')}
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+              >
+                ⏳ Pending ({pendingSubmissions.filter(s => s.status === 'Pending').length})
+              </button>
+              <button
+                type="button"
+                className={`tab-btn ${submissionTab === 'approved' ? 'active' : ''}`}
+                onClick={() => setSubmissionTab('approved')}
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+              >
+                ✅ Approved ({pendingSubmissions.filter(s => s.status === 'Approved').length})
+              </button>
+              <button
+                type="button"
+                className={`tab-btn ${submissionTab === 'rejected' ? 'active' : ''}`}
+                onClick={() => setSubmissionTab('rejected')}
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+              >
+                ❌ Rejected ({pendingSubmissions.filter(s => s.status === 'Rejected').length})
+              </button>
+              <button
+                type="button"
+                className={`tab-btn ${submissionTab === 'all' ? 'active' : ''}`}
+                onClick={() => setSubmissionTab('all')}
+                style={{ padding: '0.35rem 0.75rem', fontSize: '0.8rem' }}
+              >
+                All ({pendingSubmissions.length})
+              </button>
+            </div>
+
+            {/* Type Selector */}
+            <select
+              className="form-control"
+              value={submissionTypeFilter}
+              onChange={e => setSubmissionTypeFilter(e.target.value)}
+              style={{ width: 'auto', padding: '0.35rem 0.75rem', fontSize: '0.8rem', height: '34px' }}
+            >
+              <option value="all">All Record Types</option>
+              <option value="EggCollection">🥚 Egg Collections</option>
+              <option value="Mortality">💀 Mortality Logs</option>
+              <option value="FeedConsumption">🌾 Feed Consumption</option>
+              <option value="FeedPurchase">🛒 Feed Purchases</option>
+              <option value="VaccineSchedule">💉 Vaccine Events</option>
+              <option value="MedicalRecord">🩺 Medical Records</option>
+              <option value="BirdBatch">🐥 Bird Batches</option>
+            </select>
+          </div>
+        </div>
+
+        {filteredSubmissions.length === 0 ? (
+          <div className="empty-state" style={{ padding: '2rem 1rem' }}>
+            <div className="empty-icon">
+              {submissionTab === 'pending' ? '✨' : '📁'}
+            </div>
+            <h5>
+              {submissionTab === 'pending'
+                ? 'No Pending Submissions'
+                : `No ${submissionTab} submissions found`}
+            </h5>
+            <p style={{ margin: 0, fontSize: '0.85rem' }}>
+              {submissionTab === 'pending'
+                ? 'All employee farm logs have been reviewed and processed!'
+                : 'Submissions matching this filter will appear here.'}
+            </p>
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <table className="custom-table">
+              <thead>
+                <tr>
+                  <th>Submitted By & Date</th>
+                  <th>Record Type</th>
+                  <th>Submission Details</th>
+                  <th>Status</th>
+                  <th style={{ textAlign: 'right' }}>Admin Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredSubmissions.map(sub => (
+                  <tr key={sub.id}>
+                    <td>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <strong>@{sub.submittedBy}</strong>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                          {new Date(sub.submittedAt).toLocaleDateString()} {new Date(sub.submittedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={`role-badge ${
+                        sub.type === 'EggCollection' ? 'employee' :
+                        sub.type === 'Mortality' ? 'admin' :
+                        sub.type === 'FeedPurchase' || sub.type === 'FeedConsumption' ? 'employee' :
+                        'admin'
+                      }`} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}>
+                        {sub.type === 'EggCollection' ? '🥚 Egg Log' :
+                         sub.type === 'Mortality' ? '💀 Mortality' :
+                         sub.type === 'FeedConsumption' ? '🌾 Feed Use' :
+                         sub.type === 'FeedPurchase' ? '🛒 Feed Buy' :
+                         sub.type === 'VaccineSchedule' ? '💉 Vaccine' :
+                         sub.type === 'MedicalRecord' ? '🩺 Remedy' : '🐥 Bird Batch'}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: '0.85rem' }}>
+                      {renderSubmissionDetails(sub)}
+                      {sub.status === 'Rejected' && sub.rejectionReason && (
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-rose)', marginTop: '0.25rem' }}>
+                          Reason: {sub.rejectionReason}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      <span className={`badge ${sub.status === 'Pending' ? 'badge-amber' : sub.status === 'Approved' ? 'badge-emerald' : 'badge-rose'}`}>
+                        {sub.status === 'Pending' ? '⏳ Pending Review' : sub.status === 'Approved' ? '✅ Approved' : '❌ Rejected'}
+                      </span>
+                      {sub.reviewedBy && (
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+                          by @{sub.reviewedBy}
+                        </div>
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div className="actions-cell">
+                        {sub.status === 'Pending' ? (
+                          <>
+                            <button
+                              type="button"
+                              className="btn-action approve"
+                              onClick={async () => {
+                                try {
+                                  await approveSubmission(sub.id);
+                                } catch (err: any) {
+                                  alert(`Failed to approve: ${err?.message || err}`);
+                                }
+                              }}
+                              title="Approve & Apply to Live Inventory"
+                            >
+                              ✔ Approve
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-action reject"
+                              onClick={() => {
+                                setRejectModalSubId(sub.id);
+                                setRejectReasonInput('');
+                              }}
+                              title="Reject Submission"
+                            >
+                              ✖ Reject
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            className="btn-action delete"
+                            onClick={() => deletePendingSubmission(sub.id)}
+                            title="Remove from history"
+                          >
+                            🗑️ Dismiss
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* 3. Pending Registration Approvals Section */}
       <div className="glass-card table-section">
         <div className="section-header">
           <div>
@@ -167,7 +443,40 @@ export const EmployeeMgmt: React.FC = () => {
         )}
       </div>
 
-      {/* 3. Approved Users Section */}
+      {/* Modal - Rejection Reason */}
+      <Modal
+        isOpen={Boolean(rejectModalSubId)}
+        onClose={() => setRejectModalSubId(null)}
+        title="❌ Reject Farm Submission"
+        footer={
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', width: '100%' }}>
+            <button type="button" className="btn btn-secondary" onClick={() => setRejectModalSubId(null)}>
+              Cancel
+            </button>
+            <button type="button" className="btn btn-danger" onClick={handleConfirmReject}>
+              Confirm Rejection
+            </button>
+          </div>
+        }
+      >
+        <form onSubmit={handleConfirmReject} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            Please state the reason for rejecting this employee submission (optional):
+          </p>
+          <div className="form-group">
+            <textarea
+              className="form-control"
+              rows={3}
+              placeholder="e.g. Discrepancy in bird count, incorrect feed type selected..."
+              value={rejectReasonInput}
+              onChange={e => setRejectReasonInput(e.target.value)}
+              autoFocus
+            />
+          </div>
+        </form>
+      </Modal>
+
+      {/* 4. Approved Users Section */}
       <div className="glass-card table-section">
         <div className="section-header search-row">
           <div>

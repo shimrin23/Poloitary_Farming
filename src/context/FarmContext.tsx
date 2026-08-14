@@ -128,6 +128,27 @@ export interface UserCredential {
   securityAnswer?: string;
 }
 
+export type PendingSubmissionType = 
+  | 'Mortality'
+  | 'EggCollection'
+  | 'FeedConsumption'
+  | 'FeedPurchase'
+  | 'VaccineSchedule'
+  | 'MedicalRecord'
+  | 'BirdBatch';
+
+export interface PendingSubmission {
+  id: string;
+  type: PendingSubmissionType;
+  submittedBy: string;
+  submittedAt: string;
+  data: any;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  reviewedBy?: string;
+  reviewedAt?: string;
+  rejectionReason?: string;
+}
+
 interface FarmContextType {
   currentUser: User | null;
   login: (username: string, role: UserRole) => boolean;
@@ -190,6 +211,11 @@ interface FarmContextType {
   resetUserPassword: (username: string, newPassword: string) => { success: boolean; message: string };
   verifyAndResetPassword: (username: string, dob: string, answer: string, newPassword: string) => { success: boolean; message: string };
   deleteUser: (username: string) => void;
+  pendingSubmissions: PendingSubmission[];
+  submitForApproval: (type: PendingSubmissionType, data: any) => PendingSubmission;
+  approveSubmission: (submissionId: string) => Promise<void>;
+  rejectSubmission: (submissionId: string, reason?: string) => void;
+  deletePendingSubmission: (submissionId: string) => void;
   isLoading: boolean;
 }
 
@@ -1841,6 +1867,102 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // ----------------------------------------------------
+  // EMPLOYEE PENDING SUBMISSION APPROVAL QUEUE
+  // ----------------------------------------------------
+  const [pendingSubmissions, setPendingSubmissions] = useState<PendingSubmission[]>(() => {
+    try {
+      const saved = localStorage.getItem('aksha_pending_submissions');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('aksha_pending_submissions', JSON.stringify(pendingSubmissions));
+  }, [pendingSubmissions]);
+
+  const submitForApproval = (type: PendingSubmissionType, data: any) => {
+    const newSubmission: PendingSubmission = {
+      id: `SUB-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
+      type,
+      submittedBy: currentUser?.username || 'employee',
+      submittedAt: new Date().toISOString(),
+      data,
+      status: 'Pending'
+    };
+    setPendingSubmissions(prev => [newSubmission, ...prev]);
+    return newSubmission;
+  };
+
+  const approveSubmission = async (submissionId: string) => {
+    const sub = pendingSubmissions.find(s => s.id === submissionId);
+    if (!sub || sub.status !== 'Pending') return;
+
+    try {
+      switch (sub.type) {
+        case 'Mortality':
+          logMortality(sub.data.batchId, Number(sub.data.quantity), sub.data.reason, sub.data.date);
+          break;
+        case 'EggCollection':
+          addEggCollection(sub.data);
+          break;
+        case 'FeedConsumption':
+          addFeedConsumption(sub.data);
+          break;
+        case 'FeedPurchase':
+          addFeedPurchase(sub.data);
+          break;
+        case 'VaccineSchedule':
+          addVaccineSchedule(sub.data);
+          break;
+        case 'MedicalRecord':
+          addMedicalRecord(sub.data);
+          break;
+        case 'BirdBatch':
+          addBatch(sub.data);
+          break;
+      }
+
+      setPendingSubmissions(prev =>
+        prev.map(s =>
+          s.id === submissionId
+            ? {
+                ...s,
+                status: 'Approved' as const,
+                reviewedBy: currentUser?.username || 'admin',
+                reviewedAt: new Date().toISOString()
+              }
+            : s
+        )
+      );
+    } catch (err) {
+      console.error('Failed to approve submission:', err);
+      throw err;
+    }
+  };
+
+  const rejectSubmission = (submissionId: string, reason?: string) => {
+    setPendingSubmissions(prev =>
+      prev.map(s =>
+        s.id === submissionId
+          ? {
+              ...s,
+              status: 'Rejected' as const,
+              reviewedBy: currentUser?.username || 'admin',
+              reviewedAt: new Date().toISOString(),
+              rejectionReason: reason || 'Declined by Administrator'
+            }
+          : s
+      )
+    );
+  };
+
+  const deletePendingSubmission = (submissionId: string) => {
+    setPendingSubmissions(prev => prev.filter(s => s.id !== submissionId));
+  };
+
   return (
     <FarmContext.Provider
       value={{
@@ -1892,6 +2014,11 @@ export const FarmProvider: React.FC<{ children: React.ReactNode }> = ({ children
         resetUserPassword,
         verifyAndResetPassword,
         deleteUser,
+        pendingSubmissions,
+        submitForApproval,
+        approveSubmission,
+        rejectSubmission,
+        deletePendingSubmission,
         isLoading
       }}
     >

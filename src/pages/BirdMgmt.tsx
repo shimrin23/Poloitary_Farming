@@ -15,7 +15,8 @@ export const BirdMgmt: React.FC = () => {
     sellBatch,
     sales,
     updateBatch,
-    currentUser
+    currentUser,
+    submitForApproval
   } = useFarm();
   const isAdmin = currentUser?.role === 'Admin';
 
@@ -221,7 +222,7 @@ export const BirdMgmt: React.FC = () => {
       ? (Number(newQtyKg) * Number(newPricePerKg)) / Number(newQty)
       : Number(newPrice);
 
-    addBatch({
+    const batchPayload = {
       id: newBatchId.toUpperCase(),
       type: newType,
       arrivalDate: newArrivalDate,
@@ -229,7 +230,14 @@ export const BirdMgmt: React.FC = () => {
       purchasePrice: calculatedPrice,
       initialQuantityKg: newType === 'Broiler' ? Number(newQtyKg) : undefined,
       purchasePricePerKg: newType === 'Broiler' ? Number(newPricePerKg) : undefined
-    });
+    };
+
+    if (!isAdmin) {
+      submitForApproval('BirdBatch', batchPayload);
+      alert('✅ Bird Batch registration submitted! It is now pending Admin approval.');
+    } else {
+      addBatch(batchPayload);
+    }
 
     // Reset and Close
     setNewBatchId('');
@@ -247,7 +255,19 @@ export const BirdMgmt: React.FC = () => {
       return;
     }
 
-    logMortality(selectedBatchId, Number(mortalityQty), mortalityReason, mortalityDate);
+    const mortalityPayload = {
+      batchId: selectedBatchId,
+      quantity: Number(mortalityQty),
+      reason: mortalityReason,
+      date: mortalityDate
+    };
+
+    if (!isAdmin) {
+      submitForApproval('Mortality', mortalityPayload);
+      alert('✅ Mortality log submitted! It is now pending Admin approval.');
+    } else {
+      logMortality(selectedBatchId, Number(mortalityQty), mortalityReason, mortalityDate);
+    }
 
     // Reset and Close
     setMortalityQty(0);

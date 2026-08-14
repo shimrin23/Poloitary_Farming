@@ -8,6 +8,8 @@ export const HealthMgmt: React.FC = () => {
     vaccines, 
     medicalRecords, 
     usersList,
+    currentUser,
+    submitForApproval,
     addVaccineSchedule, 
     updateVaccineStatus, 
     addMedicalRecord, 
@@ -18,6 +20,7 @@ export const HealthMgmt: React.FC = () => {
     updateMortalityLog,
     deleteMortalityLog
   } = useFarm();
+  const isAdmin = currentUser?.role === 'Admin';
 
   const [subTab, setSubTab] = useState<'vaccines' | 'medical' | 'mortality'>('vaccines');
   const [isVaccineModalOpen, setIsVaccineModalOpen] = useState(false);
@@ -188,7 +191,16 @@ export const HealthMgmt: React.FC = () => {
   const handleVaccineSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!vaccineBatchId) return;
-    addVaccineSchedule({ vaccineName, batchId: vaccineBatchId, scheduledDate: vaccineDate });
+
+    const vaccinePayload = { vaccineName, batchId: vaccineBatchId, scheduledDate: vaccineDate };
+
+    if (!isAdmin) {
+      submitForApproval('VaccineSchedule', vaccinePayload);
+      alert('✅ Vaccine schedule event submitted! It is now pending Admin approval.');
+    } else {
+      addVaccineSchedule(vaccinePayload);
+    }
+
     setVaccineName('Newcastle Disease');
     setVaccineBatchId('');
     setIsVaccineModalOpen(false);
@@ -197,7 +209,23 @@ export const HealthMgmt: React.FC = () => {
   const handleMedicalSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!medicalBatchId || !disease || !medicine) return;
-    addMedicalRecord({ date: medicalDate, batchId: medicalBatchId, disease, medicine, dosage, cost: Number(medicalCost) });
+
+    const medicalPayload = {
+      date: medicalDate,
+      batchId: medicalBatchId,
+      disease,
+      medicine,
+      dosage,
+      cost: Number(medicalCost)
+    };
+
+    if (!isAdmin) {
+      submitForApproval('MedicalRecord', medicalPayload);
+      alert('✅ Medical record submitted! It is now pending Admin approval.');
+    } else {
+      addMedicalRecord(medicalPayload);
+    }
+
     setMedicalBatchId('');
     setDisease('');
     setMedicine('');

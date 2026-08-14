@@ -19,7 +19,7 @@ const PRESET_CHARGES = [
 ];
 
 export const EggProduction: React.FC = () => {
-  const { eggCollections, addEggCollection, deleteEggCollection, addEggSale, updateEggCollection, sales, currentUser } = useFarm();
+  const { eggCollections, addEggCollection, deleteEggCollection, addEggSale, updateEggCollection, sales, currentUser, pendingSubmissions, submitForApproval } = useFarm();
   const isAdmin = currentUser?.role === 'Admin';
   
   const [isCollectModalOpen, setIsCollectModalOpen] = useState(false);
@@ -89,12 +89,19 @@ export const EggProduction: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    addEggCollection({
+    const collectionData = {
       date: collectDate,
       collectedQty: Number(collectQty),
       damagedQty: Number(collectDamaged),
       netQty: Number(collectQty) - Number(collectDamaged)
-    });
+    };
+
+    if (!isAdmin) {
+      submitForApproval('EggCollection', collectionData);
+      alert('✅ Egg collection record submitted! It is now pending Admin approval before updating live inventory.');
+    } else {
+      addEggCollection(collectionData);
+    }
 
     // Reset and Close
     setCollectQty(0);
@@ -210,6 +217,58 @@ export const EggProduction: React.FC = () => {
           </span>
         </div>
       </div>
+
+      {/* Employee Pending Submissions Awaiting Approval */}
+      {(() => {
+        const pendingEggs = pendingSubmissions.filter(s => s.type === 'EggCollection');
+        if (pendingEggs.length === 0) return null;
+        return (
+          <div className="glass-card" style={{ marginTop: '1.5rem', border: '1px solid rgba(245, 158, 11, 0.3)', background: 'rgba(245, 158, 11, 0.04)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.2rem' }}>⏳</span>
+                <div>
+                  <h4 style={{ margin: 0, color: 'var(--color-amber)' }}>Pending Submissions Awaiting Admin Approval</h4>
+                  <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    Records logged by staff members will update live inventory once approved by an administrator.
+                  </p>
+                </div>
+              </div>
+              <span className="badge badge-amber">{pendingEggs.filter(p => p.status === 'Pending').length} Pending</span>
+            </div>
+            <div className="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Submitted By</th>
+                    <th>Date</th>
+                    <th>Collected</th>
+                    <th>Damaged</th>
+                    <th>Net Usable</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingEggs.map(sub => (
+                    <tr key={sub.id}>
+                      <td><strong>@{sub.submittedBy}</strong></td>
+                      <td>{sub.data.date}</td>
+                      <td>{sub.data.collectedQty} eggs</td>
+                      <td><span className="color-rose">{sub.data.damagedQty} damaged</span></td>
+                      <td><span className="color-emerald"><b>{sub.data.netQty} eggs</b></span></td>
+                      <td>
+                        <span className={`badge ${sub.status === 'Pending' ? 'badge-amber' : sub.status === 'Approved' ? 'badge-emerald' : 'badge-rose'}`}>
+                          {sub.status === 'Pending' ? '⏳ Pending Approval' : sub.status === 'Approved' ? '✅ Approved' : '❌ Rejected'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Collection Logs */}
       <div className="glass-card" style={{ marginTop: '2rem' }}>

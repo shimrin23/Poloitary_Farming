@@ -4,7 +4,7 @@ import type { FeedType } from '../context/FarmContext';
 import { Modal } from '../components/Modal';
 
 export const FeedMgmt: React.FC = () => {
-  const { batches, feedPurchases, feedConsumption, addFeedPurchase, addFeedConsumption, getFeedStock, updateFeedPurchase, updateFeedConsumption, deleteFeedPurchase, currentUser } = useFarm();
+  const { batches, feedPurchases, feedConsumption, addFeedPurchase, addFeedConsumption, getFeedStock, updateFeedPurchase, updateFeedConsumption, deleteFeedPurchase, currentUser, submitForApproval } = useFarm();
   const isAdmin = currentUser?.role === 'Admin';
 
   const [subTab, setSubTab] = useState<'inventory' | 'purchases' | 'consumption'>('inventory');
@@ -91,13 +91,22 @@ export const FeedMgmt: React.FC = () => {
   const handlePurchaseSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!purchaseVendor.trim()) return;
-    addFeedPurchase({
+
+    const purchaseData = {
       date: purchaseDate,
       feedType: purchaseType,
       quantityKg: Number(purchaseQty),
       cost: Number(purchaseCost),
       vendor: purchaseVendor
-    });
+    };
+
+    if (!isAdmin) {
+      submitForApproval('FeedPurchase', purchaseData);
+      alert('✅ Feed purchase record submitted! It is now pending Admin approval.');
+    } else {
+      addFeedPurchase(purchaseData);
+    }
+
     setPurchaseVendor('');
     setPurchaseQty(0);
     setPurchaseCost(0);
@@ -107,12 +116,21 @@ export const FeedMgmt: React.FC = () => {
   const handleConsumptionSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!consumptionBatchId) return;
-    addFeedConsumption({
+
+    const consumptionData = {
       date: consumptionDate,
       feedType: consumptionType,
       batchId: consumptionBatchId,
       quantityKg: Number(consumptionQty)
-    });
+    };
+
+    if (!isAdmin) {
+      submitForApproval('FeedConsumption', consumptionData);
+      alert('✅ Feed consumption record submitted! It is now pending Admin approval.');
+    } else {
+      addFeedConsumption(consumptionData);
+    }
+
     setConsumptionBatchId('');
     setConsumptionQty(0);
     setIsConsumptionModalOpen(false);
