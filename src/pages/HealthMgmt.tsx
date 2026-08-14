@@ -26,25 +26,14 @@ export const HealthMgmt: React.FC = () => {
   const [isVaccineModalOpen, setIsVaccineModalOpen] = useState(false);
   const [isMedicalModalOpen, setIsMedicalModalOpen] = useState(false);
   
-  // Admin Verification for Vaccine Status (Mark Done / Revert) & Editing Vaccine Events
+  // Admin Verification for Editing Vaccine Events
   const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [adminAuthError, setAdminAuthError] = useState('');
-  const [pendingVaccineAction, setPendingVaccineAction] = useState<
-    | { type: 'status'; id: string; status: 'Completed' | 'Pending' }
-    | { type: 'edit'; vaccine: any }
-    | null
-  >(null);
-
-  const handleInitiateVaccineStatus = (id: string, status: 'Completed' | 'Pending') => {
-    setPendingVaccineAction({ type: 'status', id, status });
-    setAdminPasswordInput('');
-    setAdminAuthError('');
-    setIsAdminAuthModalOpen(true);
-  };
+  const [pendingEditVaccine, setPendingEditVaccine] = useState<any | null>(null);
 
   const handleInitiateEditVaccine = (v: any) => {
-    setPendingVaccineAction({ type: 'edit', vaccine: v });
+    setPendingEditVaccine(v);
     setAdminPasswordInput('');
     setAdminAuthError('');
     setIsAdminAuthModalOpen(true);
@@ -52,7 +41,7 @@ export const HealthMgmt: React.FC = () => {
 
   const handleVerifyAdminAndExecute = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!pendingVaccineAction) return;
+    if (!pendingEditVaccine) return;
 
     const adminUser = usersList.find(u => u.role === 'Admin');
     const isPasswordCorrect = adminUser 
@@ -65,17 +54,13 @@ export const HealthMgmt: React.FC = () => {
     }
 
     try {
-      if (pendingVaccineAction.type === 'status') {
-        await updateVaccineStatus(pendingVaccineAction.id, pendingVaccineAction.status);
-      } else if (pendingVaccineAction.type === 'edit') {
-        handleOpenEditVaccine(pendingVaccineAction.vaccine);
-      }
+      handleOpenEditVaccine(pendingEditVaccine);
       setIsAdminAuthModalOpen(false);
-      setPendingVaccineAction(null);
+      setPendingEditVaccine(null);
       setAdminPasswordInput('');
       setAdminAuthError('');
     } catch (err) {
-      console.error('Vaccine action failed:', err);
+      console.error('Vaccine edit verification failed:', err);
       setAdminAuthError('❌ Action failed. Please try again.');
     }
   };
@@ -349,24 +334,40 @@ export const HealthMgmt: React.FC = () => {
                         </span>
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '0.35rem' }}>
-                          {v.status === 'Pending' ? (
-                            <button className="btn btn-primary btn-xs-custom" onClick={() => handleInitiateVaccineStatus(v.id, 'Completed')}>
-                              ✓ Mark Done
+                        {isAdmin ? (
+                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                            {v.status === 'Pending' ? (
+                              <button className="btn btn-primary btn-xs-custom" onClick={() => updateVaccineStatus(v.id, 'Completed')}>
+                                ✓ Mark Done
+                              </button>
+                            ) : (
+                              <button className="btn btn-secondary btn-xs-custom" onClick={() => updateVaccineStatus(v.id, 'Pending')}>
+                                ↺ Revert
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              className="btn btn-secondary btn-xs-custom"
+                              onClick={() => handleInitiateEditVaccine(v)}
+                            >
+                              ✏️ Edit
                             </button>
-                          ) : (
-                            <button className="btn btn-secondary btn-xs-custom" onClick={() => handleInitiateVaccineStatus(v.id, 'Pending')}>
-                              ↺ Revert
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            className="btn btn-secondary btn-xs-custom"
-                            onClick={() => handleInitiateEditVaccine(v)}
-                          >
-                            ✏️ Edit
-                          </button>
-                        </div>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                            {v.status === 'Pending' ? (
+                              <button
+                                type="button"
+                                className="btn btn-primary btn-xs-custom"
+                                onClick={() => updateVaccineStatus(v.id, 'Completed')}
+                              >
+                                ✓ Mark Done
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>—</span>
+                            )}
+                          </div>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -419,13 +420,17 @@ export const HealthMgmt: React.FC = () => {
                       <td className="dosage-cell">{m.dosage}</td>
                       <td><strong className="cost-highlight">Rs {m.cost.toFixed(2)}</strong></td>
                       <td>
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-xs-custom"
-                          onClick={() => handleOpenEditMedical(m)}
-                        >
-                          ✏️ Edit
-                        </button>
+                        {isAdmin ? (
+                          <button
+                            type="button"
+                            className="btn btn-secondary btn-xs-custom"
+                            onClick={() => handleOpenEditMedical(m)}
+                          >
+                            ✏️ Edit
+                          </button>
+                        ) : (
+                          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>—</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -953,12 +958,12 @@ export const HealthMgmt: React.FC = () => {
         </form>
       </Modal>
 
-      {/* ── Admin Password Approval Modal for Vaccine Status ── */}
+      {/* ── Admin Password Approval Modal for Editing Vaccine Event ── */}
       <Modal
         isOpen={isAdminAuthModalOpen}
         onClose={() => {
           setIsAdminAuthModalOpen(false);
-          setPendingVaccineAction(null);
+          setPendingEditVaccine(null);
           setAdminPasswordInput('');
           setAdminAuthError('');
         }}
@@ -970,7 +975,7 @@ export const HealthMgmt: React.FC = () => {
               type="button"
               onClick={() => {
                 setIsAdminAuthModalOpen(false);
-                setPendingVaccineAction(null);
+                setPendingEditVaccine(null);
                 setAdminPasswordInput('');
                 setAdminAuthError('');
               }}
@@ -978,7 +983,7 @@ export const HealthMgmt: React.FC = () => {
               Cancel
             </button>
             <button className="btn btn-success" type="button" onClick={handleVerifyAdminAndExecute}>
-              {pendingVaccineAction?.type === 'edit' ? '🔑 Verify & Open Editor' : '🔑 Verify & Update'}
+              🔑 Verify & Open Editor
             </button>
           </div>
         }
@@ -989,9 +994,7 @@ export const HealthMgmt: React.FC = () => {
               🔒 Admin Password Required
             </p>
             <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              {pendingVaccineAction?.type === 'edit'
-                ? 'Editing a vaccination schedule event requires administrator verification.'
-                : 'Marking an immunization / vaccine task as completed or updating its status requires administrator verification.'}
+              Editing a vaccination schedule event requires administrator verification.
             </p>
           </div>
 
