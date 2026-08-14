@@ -23,14 +23,25 @@ export const HealthMgmt: React.FC = () => {
   const [isVaccineModalOpen, setIsVaccineModalOpen] = useState(false);
   const [isMedicalModalOpen, setIsMedicalModalOpen] = useState(false);
   
-  // Admin Verification for Vaccine Status (Mark Done / Revert)
+  // Admin Verification for Vaccine Status (Mark Done / Revert) & Editing Vaccine Events
   const [isAdminAuthModalOpen, setIsAdminAuthModalOpen] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [adminAuthError, setAdminAuthError] = useState('');
-  const [pendingVaccineAction, setPendingVaccineAction] = useState<{ id: string; status: 'Completed' | 'Pending' } | null>(null);
+  const [pendingVaccineAction, setPendingVaccineAction] = useState<
+    | { type: 'status'; id: string; status: 'Completed' | 'Pending' }
+    | { type: 'edit'; vaccine: any }
+    | null
+  >(null);
 
   const handleInitiateVaccineStatus = (id: string, status: 'Completed' | 'Pending') => {
-    setPendingVaccineAction({ id, status });
+    setPendingVaccineAction({ type: 'status', id, status });
+    setAdminPasswordInput('');
+    setAdminAuthError('');
+    setIsAdminAuthModalOpen(true);
+  };
+
+  const handleInitiateEditVaccine = (v: any) => {
+    setPendingVaccineAction({ type: 'edit', vaccine: v });
     setAdminPasswordInput('');
     setAdminAuthError('');
     setIsAdminAuthModalOpen(true);
@@ -51,14 +62,18 @@ export const HealthMgmt: React.FC = () => {
     }
 
     try {
-      await updateVaccineStatus(pendingVaccineAction.id, pendingVaccineAction.status);
+      if (pendingVaccineAction.type === 'status') {
+        await updateVaccineStatus(pendingVaccineAction.id, pendingVaccineAction.status);
+      } else if (pendingVaccineAction.type === 'edit') {
+        handleOpenEditVaccine(pendingVaccineAction.vaccine);
+      }
       setIsAdminAuthModalOpen(false);
       setPendingVaccineAction(null);
       setAdminPasswordInput('');
       setAdminAuthError('');
     } catch (err) {
-      console.error('Vaccine status update failed:', err);
-      setAdminAuthError('❌ Failed to update immunization status. Please try again.');
+      console.error('Vaccine action failed:', err);
+      setAdminAuthError('❌ Action failed. Please try again.');
     }
   };
 
@@ -319,7 +334,7 @@ export const HealthMgmt: React.FC = () => {
                           <button
                             type="button"
                             className="btn btn-secondary btn-xs-custom"
-                            onClick={() => handleOpenEditVaccine(v)}
+                            onClick={() => handleInitiateEditVaccine(v)}
                           >
                             ✏️ Edit
                           </button>
@@ -935,7 +950,7 @@ export const HealthMgmt: React.FC = () => {
               Cancel
             </button>
             <button className="btn btn-success" type="button" onClick={handleVerifyAdminAndExecute}>
-              🔑 Verify & Update
+              {pendingVaccineAction?.type === 'edit' ? '🔑 Verify & Open Editor' : '🔑 Verify & Update'}
             </button>
           </div>
         }
@@ -946,7 +961,9 @@ export const HealthMgmt: React.FC = () => {
               🔒 Admin Password Required
             </p>
             <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              Marking an immunization / vaccine task as completed or updating its status requires administrator verification.
+              {pendingVaccineAction?.type === 'edit'
+                ? 'Editing a vaccination schedule event requires administrator verification.'
+                : 'Marking an immunization / vaccine task as completed or updating its status requires administrator verification.'}
             </p>
           </div>
 
