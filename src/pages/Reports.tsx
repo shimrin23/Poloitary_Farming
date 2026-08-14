@@ -225,7 +225,7 @@ export const Reports: React.FC = () => {
 </head>
 <body>
   <div class="report-header">
-    <h2>AKSHA FARM — FARM PERFORMANCE STATEMENT</h2>
+    <h2>AKSHA POULTRY FARMS — FARM PERFORMANCE STATEMENT</h2>
     <p><b>Period:</b> ${startDate} &nbsp;→&nbsp; ${endDate}</p>
     <span class="period-badge">${periodLabel}</span>
     <p style="margin-top:0.4rem;">Generated: ${new Date().toLocaleString()}</p>
@@ -326,7 +326,7 @@ export const Reports: React.FC = () => {
 
       {/* Printable Report Header */}
       <div className="print-report-header printable-only" style={{ display: 'none', marginBottom: '2rem' }}>
-        <h2>AKSHA FARM ERP - FARM PERFORMANCE STATEMENT</h2>
+        <h2>AKSHA POULTRY FARMS - FARM PERFORMANCE STATEMENT</h2>
         <p><b>Period Range:</b> {startDate} to {endDate}</p>
         <p>Generated on {new Date().toLocaleString()}</p>
         <hr style={{ marginTop: '1rem', borderColor: '#000000' }} />

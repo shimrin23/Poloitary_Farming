@@ -232,7 +232,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, isOpe
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
             <div className="logo-icon">🐔</div>
             <div className="logo-text">
-              <h2>AKSHA FARM</h2>
+              <h2>AKSHA POULTRY FARMS</h2>
               <span>Premium Poultry Products</span>
             </div>
           </div>

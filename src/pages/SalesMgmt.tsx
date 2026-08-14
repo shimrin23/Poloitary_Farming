@@ -1597,7 +1597,7 @@ export const SalesMgmt: React.FC = () => {
             </div>
 
             <div className="invoice-footer-notes" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <p>Statement of Account for {statementCustomer.name} · Aksha Farm Management</p>
+              <p>Statement of Account for {statementCustomer.name} · Aksha Poultry Farms</p>
             </div>
           </div>
         )}
